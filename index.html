@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoTwin-EDGE — Edge-AI Digital Twins for Climate-Zone-Aware Building Efficiency</title>
+<meta name="description" content="EcoTwin: Edge-AI digital twins enabling climate-zone-aware, occupancy-driven building energy efficiency across India's diverse building stock."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg0:#f0f4f8;--bg1:#e2e8f0;--bgc:rgba(255,255,255,0.95);
+  --bgl:rgba(0,100,200,0.04);--brd:rgba(0,100,200,0.15);
+  --g:#059669;--b:#0369a1;--o:#ea580c;--p:#7c3aed;--y:#d97706;
+  --t0:#0f172a;--t1:#475569;--t2:#94a3b8;
+  --r8:8px;--r12:12px;--r16:16px;--r22:22px;
+  --fw:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fw);background:var(--bg0);color:var(--t0);min-height:100vh;overflow-x:hidden;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(3,105,161,0.06) 0%,transparent 70%),
+  radial-gradient(ellipse 40% 30% at 90% 70%,rgba(5,150,105,0.04) 0%,transparent 60%);}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:#e2e8f0;}
+::-webkit-scrollbar-thumb{background:var(--b);border-radius:3px;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 28px;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--brd);box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+.nb{display:flex;align-items:center;gap:12px;}
+.nl{width:40px;height:40px;background:linear-gradient(135deg,var(--g),var(--b));border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  animation:lp 3s ease-in-out infinite;box-shadow:0 0 14px rgba(5,150,105,0.25);}
+@keyframes lp{0%,100%{box-shadow:0 0 12px rgba(5,150,105,0.2);}50%{box-shadow:0 0 22px rgba(5,150,105,0.4),0 0 36px rgba(3,105,161,0.15);}}
+.nt{font-size:19px;font-weight:800;letter-spacing:-0.5px;}.nt span{color:var(--g);}
+.ns{font-size:11px;color:var(--t1);margin-top:1px;}
+.nt2{font-size:16px;font-weight:800;letter-spacing:-0.3px;}
+.ntabs{display:flex;gap:3px;background:rgba(0,0,0,0.03);border:1px solid var(--brd);border-radius:12px;padding:4px;}
+.ntab{padding:7px 15px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .2s;color:var(--t1);border:none;background:none;}
+.ntab:hover,.ntab.on{background:rgba(3,105,161,0.10);color:var(--t0);}
+.ntab.on{color:var(--b);}
+.badge{background:linear-gradient(135deg,rgba(5,150,105,0.12),rgba(3,105,161,0.10));
+  border:1px solid rgba(5,150,105,0.3);color:var(--g);padding:5px 14px;border-radius:20px;
+  font-size:11px;font-weight:700;letter-spacing:.4px;}
+
+/* MAIN */
+main{padding:26px 28px 60px;max-width:1640px;margin:0 auto;}
+.page{display:none;}.page.on{display:block;}
+
+/* SECTION HDR */
+.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+.st{font-size:21px;font-weight:700;}.st .ac{color:var(--b);}
+.sd{font-size:13px;color:var(--t1);margin-top:4px;max-width:620px;line-height:1.65;}
+.sbg{background:rgba(3,105,161,0.08);border:1px solid rgba(3,105,161,0.22);color:var(--b);
+  padding:5px 15px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+
+/* STATUS */
+.sbar{display:flex;align-items:center;gap:8px;margin-bottom:22px;padding:10px 16px;
+  background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.18);border-radius:var(--r8);
+  font-size:12px;color:var(--t1);}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--g);animation:bk 1.5s ease-in-out infinite;}
+@keyframes bk{0%,100%{opacity:1;box-shadow:0 0 6px var(--g);}50%{opacity:.4;}}
+.sbar strong{color:var(--g);}
+
+/* GRIDS */
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:18px;}
+
+/* CARD */
+.card{background:var(--bgc);border:1px solid var(--brd);border-radius:var(--r12);padding:18px;
+  backdrop-filter:blur(12px);transition:border-color .3s,box-shadow .3s;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(3,105,161,0.5),transparent);opacity:0;transition:opacity .3s;}
+.card:hover{border-color:rgba(3,105,161,0.35);box-shadow:0 4px 18px rgba(3,105,161,0.10);}
+.card:hover::before{opacity:1;}
+.cl{font-size:12px;font-weight:600;color:var(--t1);text-transform:uppercase;letter-spacing:.4px;}
+.cv{font-size:30px;font-weight:800;line-height:1;margin-top:6px;}
+.cu{font-size:13px;font-weight:500;color:var(--t1);margin-left:3px;}
+.cd{font-size:11px;font-weight:600;margin-top:5px;display:flex;align-items:center;gap:3px;}
+.pos{color:var(--g);}.neg{color:var(--o);}
+.ki{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.kg{background:rgba(0,255,136,0.12);}.kb{background:rgba(0,212,255,0.12);}
+.ko{background:rgba(255,107,53,0.12);}.kp{background:rgba(180,110,255,0.12);}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+
+/* BUILDING CARDS */
+.bc{background:var(--bgc);border:1px solid var(--brd);border-radius:var(--r12);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.05);
+  cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.bc.on,.bc:hover{border-color:rgba(3,105,161,0.45);transform:translateY(-2px);box-shadow:0 4px 16px rgba(3,105,161,0.12);}
+.bcc{font-size:14px;font-weight:700;margin-bottom:3px;}
+.bz{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:10px;margin-bottom:10px;letter-spacing:.3px;}
+.wh{background:rgba(255,107,53,0.15);color:#ff8a65;border:1px solid rgba(255,107,53,0.25);}
+.cp{background:rgba(0,212,255,0.12);color:#4dd8fa;border:1px solid rgba(0,212,255,0.22);}
+.hd{background:rgba(255,211,61,0.12);color:var(--y);border:1px solid rgba(255,211,61,0.22);}
+.tp{background:rgba(0,255,136,0.10);color:var(--g);border:1px solid rgba(0,255,136,0.20);}
+.bm{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.bmi{background:rgba(0,0,0,0.025);border-radius:7px;padding:7px 9px;}
+.bml{font-size:10px;color:var(--t2);font-weight:500;text-transform:uppercase;letter-spacing:.3px;}
+.bmv{font-size:17px;font-weight:800;margin-top:2px;}
+.cg{color:var(--g);}.cb{color:var(--b);}.co{color:var(--o);}.cp2{color:var(--p);}
+
+/* SENSOR GAUGES */
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px;}
+.gc{background:var(--bgc);border:1px solid var(--brd);border-radius:var(--r12);padding:16px;text-align:center;}
+.gl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--t2);font-weight:600;margin-bottom:9px;}
+.gw{position:relative;width:88px;height:88px;margin:0 auto;}
+.gsv{transform:rotate(-90deg);}
+.gtr{fill:none;stroke:rgba(0,0,0,0.08);stroke-width:8;}
+.gfi{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .7s ease;}
+.gct{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:15px;font-weight:800;font-family:var(--fm);line-height:1;}
+.gcu{font-size:8px;font-weight:500;color:var(--t1);margin-top:1px;}
+.gst{font-size:11px;font-weight:600;margin-top:7px;}
+
+/* CHARTS */
+.cw canvas{max-height:290px;}.cwt canvas{max-height:370px;}
+
+/* LIVE SIMULATION */
+.fc{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:9px;
+  font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:var(--fw);}
+.bp{background:linear-gradient(135deg,var(--g),#00c96a);color:#001a0d;box-shadow:0 4px 16px rgba(0,255,136,0.28);}
+.bp:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,255,136,0.38);}
+.bp:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.bs{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--b);}
+.bs:hover{background:rgba(0,212,255,0.18);}
+.spd{background:rgba(0,0,0,0.04);border:1px solid var(--brd);color:var(--t0);
+  padding:8px 13px;border-radius:9px;font-size:12px;font-family:var(--fw);cursor:pointer;}
+.rc{font-family:var(--fm);font-size:12px;color:var(--t1);}
+.rc strong{color:var(--b);font-size:16px;}
+
+/* PROGRESS */
+.pb{background:rgba(0,0,0,0.04);border-radius:4px;height:6px;overflow:hidden;margin-top:7px;}
+.pf{height:100%;border-radius:4px;transition:width .55s ease;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;}
+thead tr{border-bottom:1px solid rgba(0,0,0,0.1);}
+thead th{padding:11px 13px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t2);text-align:left;}
+tbody tr{border-bottom:1px solid rgba(0,0,0,0.05);transition:background .2s;}
+tbody tr:hover{background:rgba(3,105,161,0.04);}
+tbody td{padding:13px;font-size:13px;}
+.pri{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;}
+.p1{background:rgba(0,255,136,0.14);color:var(--g);border:1px solid rgba(0,255,136,0.28);}
+.p2{background:rgba(0,212,255,0.12);color:var(--b);border:1px solid rgba(0,212,255,0.25);}
+.p3{background:rgba(255,211,61,0.12);color:var(--y);border:1px solid rgba(255,211,61,0.25);}
+.p4{background:rgba(255,107,53,0.12);color:var(--o);border:1px solid rgba(255,107,53,0.25);}
+.p5{background:rgba(180,110,255,0.12);color:var(--p);border:1px solid rgba(180,110,255,0.25);}
+.rb{display:flex;align-items:center;gap:9px;}
+.rt{flex:1;background:rgba(0,0,0,0.04);border-radius:3px;height:6px;overflow:hidden;}
+.rf{height:100%;border-radius:3px;}
+
+/* HEATMAP */
+.hmh{display:flex;gap:3px;padding-left:88px;margin-bottom:3px;}
+.hmhl{flex:1;text-align:center;font-size:9px;color:var(--t2);font-family:var(--fm);}
+.hmr{display:flex;gap:3px;align-items:center;margin-bottom:3px;}
+.hml{font-size:11px;color:var(--t2);width:84px;text-align:right;padding-right:8px;font-family:var(--fm);}
+.hmc{flex:1;height:26px;border-radius:3px;cursor:pointer;transition:transform .2s;}
+.hmc:hover{transform:scaleY(1.2);z-index:2;position:relative;}
+.hmleg{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--t2);}
+.hmsw{width:28px;height:11px;border-radius:3px;}
+
+/* ARCH */
+.aw{background:var(--bgc);border:1px solid var(--brd);border-radius:var(--r22);padding:28px;box-shadow:0 1px 6px rgba(0,0,0,0.06);}
+.al{background:rgba(0,0,0,0.018);border:1px solid var(--brd);border-radius:var(--r12);
+  padding:16px 22px;margin-bottom:8px;display:flex;align-items:flex-start;gap:18px;transition:all .3s;}
+.al:hover{background:rgba(3,105,161,0.05);border-color:rgba(3,105,161,0.22);}
+.ali{font-size:26px;min-width:38px;text-align:center;padding-top:2px;}
+.alb{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;}
+.ald{font-size:13px;color:var(--t1);margin-top:3px;line-height:1.55;}
+.ans{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px;}
+.an{background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.09);border-radius:6px;
+  padding:3px 10px;font-size:11px;font-family:var(--fm);color:var(--t1);}
+.aa{text-align:center;color:var(--t2);font-size:18px;margin:-2px 0;padding:2px;}
+.aal{font-size:10px;color:var(--t2);font-family:var(--fm);}
+.alg{border-left:3px solid var(--g);}.alb2{border-left:3px solid var(--b);}
+.alp{border-left:3px solid var(--p);}.alo{border-left:3px solid var(--o);}
+
+/* PHASE */
+.pc{background:var(--bgc);border:1px solid var(--brd);border-radius:var(--r12);padding:18px;border-left:4px solid;}
+.pn{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--t2);margin-bottom:5px;}
+.pt{font-size:16px;font-weight:700;margin-bottom:6px;}
+.pd{font-size:13px;color:var(--t1);line-height:1.65;margin-bottom:13px;}
+.pm{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.pmi{background:rgba(0,0,0,0.025);border-radius:7px;padding:9px;}
+.pml{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.3px;}
+.pmv{font-size:15px;font-weight:700;margin-top:4px;}
+
+/* INNER TABS */
+.itabs{display:flex;gap:5px;margin-bottom:16px;}
+.itab{padding:5px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;
+  border:1px solid transparent;transition:all .2s;color:var(--t1);}
+.itab.on{background:rgba(3,105,161,0.10);border-color:rgba(3,105,161,0.28);color:var(--b);}
+.itab:hover:not(.on){background:rgba(0,0,0,0.03);}
+
+/* FOOTER */
+footer{text-align:center;padding:20px;font-size:12px;color:var(--t2);
+  border-top:1px solid rgba(0,0,0,0.1);margin-top:36px;background:#e2e8f0;}
+footer strong{color:var(--g);}
+
+/* ANIMATIONS */
+@keyframes fiu{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.fi{animation:fiu .45s ease forwards;}
+.fi1{animation-delay:.05s;opacity:0;}.fi2{animation-delay:.1s;opacity:0;}
+.fi3{animation-delay:.15s;opacity:0;}.fi4{animation-delay:.2s;opacity:0;}
+
+@media(max-width:1200px){.g5{grid-template-columns:repeat(3,1fr);}.g4{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:900px){main{padding:14px;}.g2,.g21,.g3{grid-template-columns:1fr;}nav{padding:10px 14px;}.ntabs{display:none;}}
+</style>
+<!-- EcoTwin-EDGE patch: chart colors, vote text, retrofit building labels -->
+</head>
+<body>
+
+<nav>
+  <div class="nb">
+    <div class="nl">🌿</div>
+    <div>
+      <div class="nt">EcoTwin<span>-EDGE</span></div>
+      <div class="ns">Edge-AI Digital Twins · Schneider Electric Hackathon 2026</div>
+    </div>
+  </div>
+  <div class="ntabs">
+    <button class="ntab on" onclick="showPage('ov',this)">📊 Overview</button>
+    <button class="ntab" onclick="showPage('bl',this)">🏢 Buildings</button>
+    <button class="ntab" onclick="showPage('gr',this)">⚡ Grid DR</button>
+    <button class="ntab" onclick="showPage('rt',this)">🔧 Retrofit Plan</button>
+    <button class="ntab" onclick="showPage('ar',this)">🏗 Architecture</button>
+  </div>
+  
+
+  <div class="badge">🟢 LIVE SIM</div>
+</nav>
+
+<main>
+
+<!-- ===== OVERVIEW ===== -->
+<section class="page on" id="p-ov">
+  <div class="sbar">
+    <div class="sdot"></div>
+    <span>Simulating <strong>Prestige Tech Park, Coimbatore</strong> (Warm-Humid) &nbsp;·&nbsp;
+    On-device RISC-V inference active &nbsp;·&nbsp; Sensors refresh every <strong>2 s</strong></span>
+  </div>
+
+  <div class="g4 fi fi1" style="margin-bottom:18px;">
+    <div class="card">
+      <div class="ch"><span class="cl">Avg Energy Saved</span><div class="ki kg">⚡</div></div>
+      <div class="cv cg" id="kE">—</div><span class="cu">% vs ECBC baseline</span>
+      <div class="cd pos">↑ Occupancy-driven HVAC/lighting</div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="cl">Avg Comfort Score</span><div class="ki kb">😊</div></div>
+      <div class="cv cb" id="kC">—</div><span class="cu">/ 100 (ASHRAE-55)</span>
+      <div class="cd pos">✓ Preserved while saving</div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="cl">Peak Load Shifted</span><div class="ki ko">📉</div></div>
+      <div class="cv co" id="kP">—</div><span class="cu">kWh off-peak today</span>
+      <div class="cd pos">↓ Reducing DISCOM stress</div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="cl">CO₂ Avoided</span><div class="ki kp">🌱</div></div>
+      <div class="cv cp2" id="kO">—</div><span class="cu">tCO₂/yr (avoided)</span>
+      <div class="cd pos">Grid EF 0.82 kgCO₂/kWh</div>
+    </div>
+  </div>
+
+  <div class="sh">
+    <div>
+      <div class="st">Live Building <span class="ac">Digital Twin</span></div>
+      <div class="sd">Virtual building running on-device RISC-V tinyML inference for occupancy + comfort prediction.</div>
+    </div>
+    <div class="sbg">🔄 Auto-refresh 2 s</div>
+  </div>
+
+  <div class="card fi fi3" id="spanel">
+    <div class="ch">
+      <div>
+        <div class="cl">Live Sensor — <span id="sbName" style="color:var(--b);">Coimbatore Block A</span></div>
+        <div style="font-size:11px;color:var(--t2);margin-top:2px;">RISC-V on-device tinyML inference · occupancy · comfort · IAQ</div>
+      </div>
+      <div id="occInd" style="font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;
+        background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);color:var(--g);">● OCCUPIED</div>
+    </div>
+    <div class="sgrid" id="gauges"></div>
+  </div>
+
+  <div class="g2 fi fi4" style="margin-top:18px;">
+    <div class="card">
+      <div class="ch"><div class="cl">Energy Intensity vs ECBC Baseline</div>
+        <span style="font-size:11px;color:var(--t2);">kWh/m²/yr · BEE reference</span></div>
+      <div class="cw"><canvas id="eBar"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="cl">24 h Energy Profile — Load Shifting</div>
+        <span style="font-size:11px;color:var(--t2);">kWh/hr · DR output</span></div>
+      <div class="cw"><canvas id="lPro"></canvas></div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ===== BUILDINGS ===== -->
+<section class="page" id="p-bl">
+  <div class="sh"><div><div class="st">Building <span class="ac">Deep Dive</span></div>
+    <div class="sd">Explore the climate zone profile, occupancy pattern, energy breakdown, and occupant comfort votes.</div></div></div>
+  <div class="g21">
+    <div>
+      <div class="card" style="margin-bottom:18px;">
+        <div class="ch"><div class="cl">Weekly Profile — <span id="bdName" style="color:var(--b);font-weight:700;">Coimbatore</span></div></div>
+        <div class="itabs">
+          <div class="itab on" onclick="bdTab('occ',this)">Occupancy</div>
+          <div class="itab" onclick="bdTab('ene',this)">Energy</div>
+          <div class="itab" onclick="bdTab('cft',this)">Comfort</div>
+        </div>
+        <div class="cwt"><canvas id="bdChart"></canvas></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:18px;">
+        <div class="cl" style="margin-bottom:14px;">Building Metadata</div>
+        <div id="bMeta"></div>
+      </div>
+      <div class="card">
+        <div class="cl" style="margin-bottom:13px;">Occupant Comfort Votes</div>
+        <div id="bVotes"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GRID DR ===== -->
+<section class="page" id="p-gr">
+  <div class="sh">
+    <div><div class="st">Grid Demand-Response <span class="ac">Controller</span></div>
+    <div class="sd">Flexible load shifting across 24 h. Pre-cooling, battery dispatch, and non-critical lighting dimmed away from DISCOM peak (18:00–22:00 IST) while maintaining comfort bounds.</div></div>
+    <div class="sbg">⚡ ToD Tariff Active</div>
+  </div>
+
+  <div class="g4" style="margin-bottom:18px;">
+    <div class="card"><div class="cl">Peak Load Avoided</div>
+      <div class="cv co" style="margin-top:6px;">342 <span class="cu">kWh</span></div>
+      <div class="cd pos">↓ Shifted to off-peak window</div></div>
+    <div class="card"><div class="cl">Pre-cooling Stored</div>
+      <div class="cv cb" style="margin-top:6px;">128 <span class="cu">kWh</span></div>
+      <div class="cd pos">Thermal mass utilised</div></div>
+    <div class="card"><div class="cl">Battery Dispatch</div>
+      <div class="cv cg" style="margin-top:6px;">86 <span class="cu">kWh</span></div>
+      <div class="cd pos">↑ Discharged during peak</div></div>
+    <div class="card"><div class="cl">Tariff Saving</div>
+      <div class="cv cp2" style="margin-top:6px;">₹1,840 <span class="cu">/day</span></div>
+      <div class="cd pos">vs flat-rate consumption</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px;">
+    <div class="ch"><div class="cl">DR Heatmap · 24 h</div>
+      <span style="font-size:11px;color:var(--t2);">Darker = higher load · Red band = DISCOM peak · Blue = pre-cooling</span></div>
+    <div id="hmCont"></div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="cl">Baseline vs DR-Optimized</div>
+      <span style="font-size:11px;color:var(--t2);">kWh/hr · shaded area = avoided peak load</span></div>
+    <div class="cwt"><canvas id="drChart"></canvas></div>
+  </div>
+</section>
+
+<!-- ===== RETROFIT ===== -->
+<section class="page" id="p-rt">
+  <div class="sh">
+    <div><div class="st">Retrofit Priority <span class="ac">Ranking</span></div>
+    <div class="sd">Interventions ranked by ROI score using the digital twin's RC-thermal model benchmarked against BEE EPI targets. Climate-zone adjusted for Indian building stock.</div></div>
+    <div class="sbg">BEE ECBC Aligned</div>
+  </div>
+  <div class="card" style="margin-bottom:24px;overflow-x:auto;">
+    <table><thead><tr>
+      <th>Priority</th><th>Intervention</th><th>Buildings</th>
+      <th>EPI Reduction</th><th>Saving (kWh/m²/yr)</th>
+      <th>Cost (₹/m²)</th><th>Payback</th><th>ROI Score</th>
+    </tr></thead><tbody id="rtBody"></tbody></table>
+  </div>
+  <div class="sh"><div><div class="st">Phased Deployment <span class="ac">Plan</span></div>
+    <div class="sd">3-phase rollout for Prestige Tech Park, Coimbatore — from sensor baseline to full optimisation.</div></div></div>
+  <div class="g3" id="phases"></div>
+</section>
+
+<!-- ===== ARCHITECTURE ===== -->
+<section class="page" id="p-ar">
+  <div class="sh">
+    <div><div class="st">System <span class="ac">Architecture</span></div>
+    <div class="sd">Four integrated layers: Sense → Learn → Model → Act. Mirrors Schneider's EcoStruxure three-tier model (connected products → edge control → apps/analytics) — deployed per building, retrofit-ready.</div></div>
+    <div class="sbg">EcoStruxure Aligned</div>
+  </div>
+  <div class="aw">
+    <div class="al alg">
+      <div class="ali">📡</div>
+      <div style="flex:1">
+        <div class="alb" style="color:var(--g);">Layer 1 — SENSE</div>
+        <div class="ald">Low-power RISC-V MCU sensor nodes (mmWave occupancy, NDIR CO₂, SHT31 Temp/RH, Lux, CT-clamp sub-metering) running quantized INT8 tinyML inference on-chip. Only derived comfort score + occupancy state transmitted — never raw data. On-device latency &lt;5 ms vs 200 ms–2 s cloud round-trip.</div>
+        <div class="ans">
+          <span class="an">RISC-V MCU (GD32VF103-class)</span><span class="an">mmWave Radar Occupancy</span>
+          <span class="an">NDIR CO₂ (SCD30)</span><span class="an">SHT31 Temp/RH</span>
+          <span class="an">Ambient Lux</span><span class="an">CT-Clamp Sub-meter</span>
+          <span class="an">INT8 Quantized Model &lt;50 KB</span>
+        </div>
+      </div>
+    </div>
+    <div class="aa">↕ <span class="aal">Derived events only (occupancy state + comfort score) — never raw streams · BLE/WiFi · &lt;1 KB/event</span></div>
+    <div class="al alb2">
+      <div class="ali">🏢</div>
+      <div style="flex:1">
+        <div class="alb" style="color:var(--b);">Layer 2 — LEARN (Building Gateway)</div>
+        <div class="ald">One Raspberry Pi–class gateway per building. Aggregates sensor nodes, trains the local comfort/energy model on building-specific data, and executes BMS actuator commands. Model continuously improves with new occupancy + comfort-vote data. Handles BACnet/Modbus bridging to existing HVAC/lighting hardware.</div>
+        <div class="ans">
+          <span class="an">Local On-Device Model Training</span><span class="an">Occupancy Pattern Learning</span>
+          <span class="an">BACnet / Modbus BMS Bridge</span><span class="an">Local Digital Twin Sync</span>
+          <span class="an">HVAC / Lighting Actuator Commands</span>
+        </div>
+      </div>
+    </div>
+    <div class="aa">↕ <span class="aal">Derived events only (occupancy + comfort score) — never raw streams · actuator commands downstream · HTTPS/TLS to cloud analytics</span></div>
+    <div class="al alp">
+      <div class="ali">🖥️</div>
+      <div style="flex:1">
+        <div class="alb" style="color:var(--p);">Layer 3 — MODEL (Digital Twin + Analytics Engine)</div>
+        <div class="ald">Lightweight RC-thermal digital twin for Prestige Tech Park, Coimbatore — benchmarked against BEE EPI reference values (165 kWh/m²/yr baseline → 132 kWh/m²/yr target). Runs ECBC compliance scoring and retrofit-priority ranking (₹/kWh-saved). Performs building-specific digital twin modelling calibrated to the Warm-Humid (ECBC) zone at Prestige Tech Park, Coimbatore.</div>
+        <div class="ans">
+          <span class="an">RC Thermal Digital Twin</span><span class="an">Climate-Zone-Aware Model</span>
+          <span class="an">BEE EPI Benchmarking</span><span class="an">ECBC Compliance Score</span>
+          <span class="an">Retrofit ROI Ranking</span><span class="an">Warm-Humid Zone Calibrated</span>
+        </div>
+      </div>
+    </div>
+    <div class="aa">↕ <span class="aal">Retrofit recommendations → Facility Dashboard · DR signals ↔ DISCOM API · Analytics → Cloud</span></div>
+    <div class="al alo">
+      <div class="ali">⚡</div>
+      <div style="flex:1">
+        <div class="alb" style="color:var(--o);">Layer 4 — ACT (Grid-Responsive Controller + Facility Dashboard)</div>
+        <div class="ald">Constrained optimisation shifts flexible loads (pre-cooling thermal mass, battery charge/discharge, non-critical lighting) away from DISCOM peak ToD windows, bounded by comfort score ≥ threshold. 1-tap occupant feedback (too warm / fine / too cold) closes the training loop — each vote is a labeled comfort-model training sample.</div>
+        <div class="ans">
+          <span class="an">DR Optimiser (LP / Rule-based)</span><span class="an">DISCOM ToD Signal</span>
+          <span class="an">Pre-cooling Scheduler</span><span class="an">Battery Dispatch</span>
+          <span class="an">Occupant Feedback Loop</span><span class="an">Facility Manager Dashboard</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g3" style="margin-top:22px;">
+    <div class="card">
+      <div class="cl" style="color:var(--o);margin-bottom:11px;">🔒 Why Edge Intelligence, Not Cloud?</div>
+      <div style="font-size:13px;color:var(--t1);line-height:1.85;">
+        <div>• <strong style="color:var(--t0);">Latency</strong> — 200 ms–2 s cloud round-trip too slow for real-time HVAC comfort control; on-device = &lt;5 ms</div>
+        <div>• <strong style="color:var(--t0);">Connectivity</strong> — tier-2/3 buildings have intermittent internet; cloud dependency breaks deployment</div>
+        <div>• <strong style="color:var(--t0);">Privacy</strong> — raw occupancy traces reveal who is where, when (DPDP Act concern for tenants)</div>
+        <div>• <strong style="color:var(--t0);">Bandwidth</strong> — streaming raw sensor data from 100s of nodes per building is expensive and wasteful</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="cl" style="color:var(--g);margin-bottom:11px;">✅ EcoStruxure Alignment</div>
+      <div style="font-size:13px;color:var(--t1);line-height:1.85;">
+        <div>• <strong style="color:var(--t0);">Connected Products</strong> → RISC-V sensor nodes (SENSE)</div>
+        <div>• <strong style="color:var(--t0);">Edge Control</strong> → Building gateway with local model + actuators (LEARN)</div>
+        <div>• <strong style="color:var(--t0);">Apps / Analytics</strong> → Digital twin + retrofit + dashboard (MODEL + ACT)</div>
+        <div>• <strong style="color:var(--t0);">Electricity 4.0</strong> — Decarbonize via digitize + electrify + distributed intelligence</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="cl" style="color:var(--b);margin-bottom:11px;">📊 Quantified Claims</div>
+      <div style="font-size:13px;color:var(--t1);line-height:1.85;">
+        <div>• <strong style="color:var(--t0);">15–25 %</strong> energy reduction — occupancy-driven control literature range</div>
+        <div>• <strong style="color:var(--t0);">BEE EPI baseline</strong> 150–210 kWh/m²/yr (climate zone & typology dependent)</div>
+        <div>• <strong style="color:var(--t0);">12–24 months</strong> payback for occupancy-based retrofit in commercial buildings</div>
+        <div>• <strong style="color:var(--t0);">0.82 kgCO₂/kWh</strong> — India average grid emission factor (CEA 2024)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer>Built for <strong>Schneider Electric Hackathon 2026</strong> · EcoTwin · Edge-AI Digital Twins for Climate-Zone-Aware Building Efficiency · Electricity 4.0</footer>
+
+<script>
+// ─────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────
+let ORIGINAL_BLDGS=[
+  {id:0,city:'Coimbatore',tag:'Block A',zone:'Warm-Humid', zc:'wh',type:'IT/ITES Campus',         area:8500, fl:4, epiB:165,epiT:132,ml:'AHU+Lighting'}
+];
+let BLDGS = [...ORIGINAL_BLDGS];
+
+const ZC={wh:'#ff8a65',cp:'#4dd8fa',hd:'#ffd93d',tp:'#00ff88'};
+
+// ─── sensor state ───
+let FULL_SS = ORIGINAL_BLDGS.map(b=>({
+  occ:0.6+Math.random()*.3, co2:600+Math.random()*400,
+  tmp:24+Math.random()*4,   lux:300+Math.random()*400,
+  cft:70+Math.random()*25,  eng:b.epiB*b.area/8760*(0.85+Math.random()*.3)
+}));
+let SS = [...FULL_SS];
+
+let FULL_VOTES = ORIGINAL_BLDGS.map(() => ({ warm: 8, fine: 79, cold: 13 }));
+let VOTES = [...FULL_VOTES];
+
+let abi=0, abi2=0, bdtab='occ';
+
+
+
+function sendVote(vote) {
+  fetch('/api/vote', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bldg_id: BLDGS[abi2].id, vote: vote })
+  }).then(r => r.json()).then(data => {
+    console.log(data.message);
+  }).catch(e => console.error("Vote failed", e));
+}
+
+// chart instances
+const CH={};
+Chart.defaults.color='#475569';
+Chart.defaults.borderColor='rgba(0,0,0,0.08)';
+Chart.defaults.font.family="'Inter',sans-serif";
+
+// ─────────────────────────────────────────────
+//  NAVIGATION
+// ─────────────────────────────────────────────
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('p-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='ov') initOv();
+  if(id==='gr') initGR();
+  if(id==='bl') initBL();
+}
+
+// ─────────────────────────────────────────────
+//  BUILDING CARDS RENDERER
+// ─────────────────────────────────────────────
+function renderBCards(cid,fn,ai){
+  const c=document.getElementById(cid); if(!c) return;
+  c.innerHTML=BLDGS.map((b,i)=>{
+    const sv=Math.round(((b.epiB-b.epiT)/b.epiB)*100);
+    return`<div class="bc${i===ai?' on':''}" onclick="${fn}(${i})">
+      <div class="bcc">${b.city} <span style="color:var(--t1);font-weight:400;font-size:11px;">${b.tag}</span></div>
+      <div><span class="bz ${b.zc}">${b.zone}</span></div>
+      <div class="bm">
+        <div class="bmi"><div class="bml">EPI Baseline</div><div class="bmv cb">${b.epiB}</div><div style="font-size:9px;color:var(--t2)">kWh/m²/yr</div></div>
+        <div class="bmi"><div class="bml">Target</div><div class="bmv cg">${b.epiT}</div><div style="font-size:9px;color:var(--t2)">kWh/m²/yr</div></div>
+        <div class="bmi"><div class="bml">Saving</div><div class="bmv co">${sv}%</div><div style="font-size:9px;color:var(--t2)">vs baseline</div></div>
+        <div class="bmi"><div class="bml">Area</div><div class="bmv cp2">${(b.area/1000).toFixed(1)}k</div><div style="font-size:9px;color:var(--t2)">m²</div></div>
+      </div></div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+//  SENSOR GAUGES
+// ─────────────────────────────────────────────
+function renderGauges(idx){
+  const s=SS[idx];
+  const gdata=[
+    {lbl:'Occupancy', val:Math.round(s.occ*100), max:100,  unit:'%',   col:s.occ>.7?'#00ff88':'#ffd93d', st:s.occ>.5?'Occupied':'Vacant'},
+    {lbl:'CO₂ Level', val:Math.round(s.co2),     max:1500, unit:'ppm', col:s.co2>1000?'#ff5252':s.co2>700?'#ffb74d':'#00d4ff', st:s.co2>1000?'Elevated':s.co2>700?'Moderate':'Good IAQ'},
+    {lbl:'Temperature',val:s.tmp.toFixed(1),      max:40,   unit:'°C',  col:s.tmp>27?'#ff6b35':s.tmp<20?'#00d4ff':'#00ff88',st:s.tmp>=22&&s.tmp<=26?'Comfort Band':'Out of Range'},
+    {lbl:'Comfort',   val:Math.round(s.cft),      max:100,  unit:'/100',col:'#b46eff',st:s.cft>80?'Excellent':s.cft>65?'Good':'Check'},
+  ];
+  const C=2*Math.PI*36;
+  document.getElementById('gauges').innerHTML=gdata.map(g=>{
+    const pct=Math.min(1,parseFloat(g.val)/g.max);
+    const off=C*(1-pct);
+    return`<div class="gc">
+      <div class="gl">${g.lbl}</div>
+      <div class="gw">
+        <svg class="gsv" width="88" height="88" viewBox="0 0 88 88">
+          <circle class="gtr" cx="44" cy="44" r="36"/>
+          <circle class="gfi" cx="44" cy="44" r="36" stroke="${g.col}"
+            stroke-dasharray="${C}" stroke-dashoffset="${off}"
+            style="filter:drop-shadow(0 0 6px ${g.col})"/>
+        </svg>
+        <div class="gct" style="color:${g.col}">${g.val}<div class="gcu">${g.unit}</div></div>
+      </div>
+      <div class="gst" style="color:${g.col}">${g.st}</div></div>`;
+  }).join('');
+
+  const occ=s.occ>.5;
+  const ind=document.getElementById('occInd');
+  if(ind){ind.textContent=occ?'● OCCUPIED':'○ VACANT';
+    ind.style.color=occ?'var(--g)':'var(--t1)';
+    ind.style.borderColor=occ?'rgba(0,255,136,0.25)':'rgba(255,255,255,0.1)';}
+}
+
+// ─────────────────────────────────────────────
+//  SENSOR UPDATE LOOP
+// ─────────────────────────────────────────────
+async function tickSensors(){
+  try {
+    const res = await fetch('/api/sensors');
+    const data = await res.json();
+    if(data.sensors) FULL_SS = data.sensors;
+    if(data.votes) FULL_VOTES = data.votes;
+    
+    SS = [...FULL_SS];
+    VOTES = [...FULL_VOTES];
+    
+    renderGauges(abi);
+    updKPIs();
+    
+    // Update comfort votes breakdown if on Buildings tab
+    const activeTab = document.querySelector('.ntab.on');
+    if (activeTab && activeTab.innerText.includes('Buildings')) {
+      const vp = document.getElementById('bVotes');
+      if (vp && vp.innerHTML.includes('Too Warm')) {
+        renderBMeta(abi2);
+      }
+    }
+  } catch(e) {
+    console.error("API error, falling back to local sim.", e);
+  }
+}
+
+function updKPIs(){
+  const avgS=BLDGS.reduce((s,b)=>s+((b.epiB-b.epiT)/b.epiB*100),0)/BLDGS.length;
+  const avgC=SS.reduce((s,b)=>s+b.cft,0)/SS.length;
+  const pk=342+Math.round((Math.random()-.5)*14);
+  const totE=BLDGS.reduce((s,b)=>s+b.area*(b.epiB-b.epiT)/1000,0);
+  const co2=+(totE*.82).toFixed(1);
+  const $=id=>document.getElementById(id);
+  if($('kE'))$('kE').textContent=avgS.toFixed(1)+'%';
+  if($('kC'))$('kC').textContent=avgC.toFixed(0);
+  if($('kP'))$('kP').textContent=pk;
+  if($('kO'))$('kO').textContent=co2;
+}
+
+// ─────────────────────────────────────────────
+//  SELECT BUILDING (overview)
+// ─────────────────────────────────────────────
+function selB(idx){
+  abi=idx;
+  document.querySelectorAll('#bcards .bc').forEach((c,i)=>{
+    c.classList.toggle('on',i===idx);
+  });
+  const b=BLDGS[idx];
+  const el=document.getElementById('sbName');
+  if(el)el.textContent=b.city+' '+b.tag+' ('+b.zone+')';
+  renderGauges(idx);
+}
+
+// ─────────────────────────────────────────────
+//  OVERVIEW CHARTS
+// ─────────────────────────────────────────────
+function initOv(){
+  renderBCards('bcards','selB',abi);
+  renderGauges(abi);
+  updKPIs();
+  if(CH.eBar) return;
+
+  const epiA=BLDGS.map(b=>b.epiT+Math.round((Math.random()-.5)*4));
+  CH.eBar=new Chart(document.getElementById('eBar'),{
+    type:'bar',
+    data:{labels:BLDGS.map(b=>b.city),datasets:[
+      {label:'ECBC Baseline',data:BLDGS.map(b=>b.epiB),backgroundColor:'rgba(255,138,101,0.20)',borderColor:'#ff8a65',borderWidth:2,borderRadius:5},
+      {label:'EcoTwin-EDGE',data:epiA,backgroundColor:'rgba(0,255,136,0.18)',borderColor:'rgba(0,255,136,0.95)',borderWidth:2.5,borderRadius:5},
+    ]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{labels:{font:{size:11}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y} kWh/m²/yr`}}},
+      scales:{y:{beginAtZero:false,min:80,grid:{color:'rgba(0,0,0,0.07)'},ticks:{font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}
+  });
+
+  const hrs=Array.from({length:24},(_,i)=>i.toString().padStart(2,'0')+':00');
+  const base=hrs.map((_,h)=>h<7?20+rnd(5):h<9?50+rnd(20):h<18?80+rnd(30):h<22?110+rnd(25):35+rnd(10));
+  const opt=hrs.map((_,h)=>h<6?40+rnd(12):h<7?55+rnd(10):h<9?60+rnd(14):h<18?75+rnd(18):h<22?65+rnd(14):30+rnd(8));
+  CH.lPro=new Chart(document.getElementById('lPro'),{
+    type:'line',
+    data:{labels:hrs,datasets:[
+      {label:'Baseline (no DR)',data:base,borderColor:'rgba(255,82,82,.7)',backgroundColor:'rgba(255,82,82,.08)',tension:.4,borderWidth:2,pointRadius:0,fill:true},
+      {label:'EcoTwin-EDGE (DR)',data:opt,borderColor:'rgba(0,255,136,.9)',backgroundColor:'rgba(0,255,136,.08)',tension:.4,borderWidth:2.5,pointRadius:0,fill:true},
+    ]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{labels:{font:{size:11}}},tooltip:{mode:'index',intersect:false}},
+      scales:{y:{grid:{color:'rgba(0,0,0,0.07)'},title:{display:true,text:'kWh/hr',font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:10},maxTicksLimit:12}}}}
+  });
+}
+
+
+
+// ─────────────────────────────────────────────
+//  BUILDINGS PAGE
+// ─────────────────────────────────────────────
+function selB2(idx){
+  abi2=idx;
+  renderBCards('bcards2','selB2',idx);
+  renderBMeta(idx);
+  updBDChart();
+  const el=document.getElementById('bdName');
+  if(el)el.textContent=BLDGS[idx].city+' '+BLDGS[idx].tag;
+}
+function renderBMeta(idx){
+  const b=BLDGS[idx];
+  const rows=[
+    ['City',b.city],['Climate Zone',b.zone],['Building Type',b.type],
+    ['Floor Area',`${b.area.toLocaleString()} m²`],['Floors',b.fl],['Main Load',b.ml],
+    ['EPI Baseline',`${b.epiB} kWh/m²/yr`],
+    ['EPI Target',`${b.epiT} kWh/m²/yr (${Math.round((1-b.epiT/b.epiB)*100)}% better)`],
+    ['Annual Saving',`${Math.round((b.epiB-b.epiT)*b.area/1000)} MWh/yr`],
+    ['CO₂ Avoided',`${((b.epiB-b.epiT)*b.area*.82/1000000).toFixed(1)} tCO₂/yr`],
+  ];
+  const p=document.getElementById('bMeta'); if(!p) return;
+  p.innerHTML=rows.map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;">
+    <span style="color:var(--t1);">${k}</span><span style="font-weight:600;">${v}</span></div>`).join('');
+  const vp=document.getElementById('bVotes'); if(!vp) return;
+  
+  const vData = typeof VOTES !== 'undefined' ? VOTES[idx] : {warm:8, fine:79, cold:13};
+  const tot = (vData.warm + vData.fine + vData.cold) || 1;
+  const pWarm = Math.round(vData.warm / tot * 100);
+  const pFine = Math.round(vData.fine / tot * 100);
+  const pCold = 100 - pWarm - pFine;
+  
+  const votes=[{l:'Too Warm',p:pWarm,c:'#ff6b35'},{l:'Just Right',p:pFine,c:'#00ff88'},{l:'Too Cold',p:pCold,c:'#00d4ff'}];
+  vp.innerHTML=votes.map(v=>`<div style="margin-bottom:11px;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+      <span style="color:var(--t1);">${v.l}</span><span style="font-weight:700;color:${v.c};">${v.p}%</span></div>
+    <div class="pb"><div class="pf" style="width:${v.p}%;background:${v.c};"></div></div></div>`).join('')+
+    `<div style="margin-top:12px; display:flex; gap: 8px;">
+       <button class="spd" onclick="sendVote('warm')">🥵 Too Warm</button>
+       <button class="spd" onclick="sendVote('fine')">😌 Fine</button>
+       <button class="spd" onclick="sendVote('cold')">🥶 Too Cold</button>
+     </div>`;
+}
+function bdTab(tab,el){
+  bdtab=tab;
+  document.querySelectorAll('.itab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  updBDChart();
+}
+function updBDChart(){
+  const b=BLDGS[abi2];
+  const lbl=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let data,label,col;
+  const colMap={'occ':'#00ff88','ene':'#00d4ff','cft':'#b46eff'};
+  const colBg={'occ':'rgba(0,255,136,0.15)','ene':'rgba(0,212,255,0.15)','cft':'rgba(180,110,255,0.15)'};
+  col=colMap[bdtab]||'#00ff88';
+  const bgCol=colBg[bdtab]||'rgba(0,255,136,0.15)';
+  if(bdtab==='occ'){data=lbl.map((_,i)=>[72,65,78,81,69,22,8][i]+rnd(8)-4);label='Occupancy (%)';}
+  else if(bdtab==='ene'){data=lbl.map(()=>b.epiT/365*b.area/1000*(.8+Math.random()*.4));label='Energy Use (MWh)';}
+  else{data=lbl.map((_,i)=>[82,78,85,80,76,91,95][i]+rnd(6)-3);label='Comfort Score';}
+  const ds={label,data,borderColor:col,backgroundColor:bgCol,fill:true,tension:.4,borderWidth:2.5,pointRadius:4,pointBackgroundColor:col};
+  if(CH.bd){CH.bd.data.labels=lbl;CH.bd.data.datasets=[{...ds,backgroundColor:col+'20'}];CH.bd.update();}
+  else CH.bd=new Chart(document.getElementById('bdChart'),{
+    type:'line',data:{labels:lbl,datasets:[{...ds,backgroundColor:col+'20'}]},
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},
+      scales:{y:{grid:{color:'rgba(0,0,0,0.07)'}},x:{grid:{display:false}}}}
+  });
+}
+function initBL(){
+  renderBCards('bcards2','selB2',abi2);
+  renderBMeta(abi2);
+  updBDChart();
+}
+
+// ─────────────────────────────────────────────
+//  GRID / DR
+// ─────────────────────────────────────────────
+function buildHM(){
+  const c=document.getElementById('hmCont'); if(!c||c.childElementCount>1) return;
+  const hrs=Array.from({length:24},(_,i)=>i);
+  const ld=BLDGS.map(()=>hrs.map(h=>{
+    const b=h>=7&&h<19?.7+Math.random()*.3:.15+Math.random()*.2;
+    const pk=h>=18&&h<22?.3:0, pre=h>=2&&h<6?-.25:0;
+    return Math.min(1,b+pk+pre+(Math.random()-.5)*.1);
+  }));
+  const hRow=document.createElement('div'); hRow.className='hmh';
+  hRow.innerHTML=hrs.map(h=>`<div class="hmhl">${h.toString().padStart(2,'0')}</div>`).join('');
+  c.appendChild(hRow);
+  BLDGS.forEach((b,bi)=>{
+    const row=document.createElement('div'); row.className='hmr';
+    row.innerHTML=`<div class="hml">${b.city}</div>`;
+    hrs.forEach(h=>{
+      const v=ld[bi][h], pk=h>=18&&h<22, pre=h>=2&&h<6;
+      const cell=document.createElement('div'); cell.className='hmc';
+      cell.style.background=pk?`rgba(255,${Math.round(107*(1-v)+30*v)},53,${.3+v*.65})`
+        :pre?`rgba(0,${Math.round(180*v+55)},255,${.2+v*.5})`
+        :`rgba(${Math.round(v*220)},${Math.round((1-Math.abs(v-.5)*2)*180+40)},${Math.round((1-v)*160)},${.25+v*.6})`;
+      cell.title=`${b.city} ${h}:00 — Load ${(v*100).toFixed(0)}%`;
+      row.appendChild(cell);
+    });
+    c.appendChild(row);
+  });
+  const leg=document.createElement('div'); leg.className='hmleg';
+  leg.innerHTML=`<span>Load:</span><div class="hmsw" style="background:linear-gradient(90deg,rgba(0,150,255,.4),rgba(0,255,136,.5),rgba(255,215,0,.6),rgba(255,107,53,.8));"></div>
+    <span>Low → High</span><span style="margin-left:14px;color:var(--o);">■</span><span>DISCOM Peak (18–22 h)</span>
+    <span style="color:var(--b);margin-left:10px;">■</span><span>Pre-cooling (02–06 h)</span>`;
+  c.appendChild(leg);
+}
+function initGR(){
+  buildHM();
+  if(CH.dr) return;
+  const hrs=Array.from({length:24},(_,i)=>i.toString().padStart(2,'0')+':00');
+  const base=hrs.map((_,h)=>h<7?80+rnd(20):h<9?200+rnd(60):h<18?350+rnd(90):h<22?560+rnd(80):120+rnd(30));
+  const opt=hrs.map((_,h)=>h<6?200+rnd(50):h<7?180+rnd(40):h<9?220+rnd(50):h<18?300+rnd(70):h<22?280+rnd(55):100+rnd(30));
+  CH.dr=new Chart(document.getElementById('drChart'),{
+    type:'line',
+    data:{labels:hrs,datasets:[
+      {label:'Baseline (no DR)',data:base,borderColor:'rgba(255,82,82,.7)',backgroundColor:'rgba(255,82,82,.1)',tension:.4,borderWidth:2,pointRadius:0,fill:true},
+      {label:'EcoTwin-EDGE (DR)',data:opt,borderColor:'rgba(0,255,136,.9)',backgroundColor:'rgba(0,255,136,.1)',tension:.4,borderWidth:2.5,pointRadius:0,fill:true},
+    ]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{labels:{font:{size:11}}},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(0)} kWh/hr`}}},
+      scales:{y:{grid:{color:'rgba(0,0,0,0.07)'},title:{display:true,text:'Aggregate load kWh/hr',font:{size:11}}},x:{grid:{display:false},ticks:{font:{size:10},maxTicksLimit:12}}}}
+  });
+}
+
+// ─────────────────────────────────────────────
+//  RETROFIT TABLE
+// ─────────────────────────────────────────────
+function buildRT(){
+  const tb=document.getElementById('rtBody'); if(!tb||(tb.childElementCount>0 && currentRole === 'all')) return;
+  const rows=[
+    {r:1,n:'Occupancy-Based HVAC Scheduling',b:'Coimbatore Block A',er:'18–22%',sv:32,cost:180,pb:13,roi:95,p:'p1',pc:'var(--g)'},
+    {r:2,n:'VFD on AHU Pumps',b:'Coimbatore Block A',er:'12–16%',sv:24,cost:280,pb:19,roi:78,p:'p2',pc:'var(--b)'},
+    {r:3,n:'LED Lighting Retrofit + Daylight Linking',b:'Coimbatore Block A',er:'8–12%',sv:16,cost:120,pb:14,roi:72,p:'p3',pc:'var(--y)'},
+    {r:4,n:'High-Performance Low-E Window Glazing',b:'Coimbatore Block A',er:'5–8%',sv:11,cost:450,pb:28,roi:48,p:'p4',pc:'var(--o)'},
+    {r:5,n:'Rooftop Solar + Battery (Demand Charge)',b:'Coimbatore Block A',er:'10–14%',sv:20,cost:850,pb:36,roi:42,p:'p5',pc:'var(--p)'},
+    {r:6,n:'Thermal Insulation Upgrade (Roof + Walls)',b:'Coimbatore Block A',er:'4–6%',sv:9,cost:320,pb:38,roi:35,p:'p5',pc:'var(--p)'},
+  ];
+  tb.innerHTML=rows.map(r=>`<tr>
+    <td><span class="pri ${r.p}">#${r.r}</span></td>
+    <td style="font-weight:600;">${r.n}</td>
+    <td style="color:var(--t1);font-size:12px;">${r.b}</td>
+    <td style="font-weight:700;color:${r.pc};font-family:var(--fm);">${r.er}</td>
+    <td style="font-family:var(--fm);color:var(--b);">${r.sv} kWh/m²/yr</td>
+    <td style="font-family:var(--fm);">₹${r.cost}/m²</td>
+    <td style="font-family:var(--fm);">${r.pb} months</td>
+    <td><div class="rb"><div class="rt"><div class="rf" style="width:${r.roi}%;background:${r.pc};"></div></div>
+      <span style="font-family:var(--fm);font-size:12px;font-weight:700;color:${r.pc};">${r.roi}</span></div></td>
+  </tr>`).join('');
+}
+
+function buildPhases(){
+  const c=document.getElementById('phases'); if(!c||c.childElementCount>0) return;
+  const ph=[
+    {n:'Phase 1 — 0–12 months',t:'Sensor Deployment & Baseline',
+     d:'Install occupancy (PIR + CO₂), temperature/RH, lux, and energy-meter nodes at Prestige Tech Park, Coimbatore. Establish BEE EPI baseline and validate tinyML inference on RISC-V edge gateway.',
+     col:'var(--g)',m:[['Nodes','42'],['CapEx','₹8–10 L'],['Duration','6 months'],['Goal','EPI baseline']]},
+    {n:'Phase 2 — 6–12 months',t:'Control Loop & DR Integration',
+     d:'Enable occupancy-driven HVAC + lighting control, pre-cooling scheduler, and DISCOM grid-signal DR response. Validate 15–22 % energy reduction vs pre-retrofit baseline. Collect occupant comfort votes.',
+     col:'var(--b)',m:[['Saving','15–22 %'],['Comfort','>72 / 100'],['Payback','12–18 months'],['CO₂ Avoided','~0.2 tCO₂/yr']]},
+    {n:'Phase 3 — 12–24 months',t:'Optimise & Scale Within Campus',
+     d:'Extend to remaining floors and AHU zones. Fine-tune tinyML models with 12 months of real occupancy data. Full BMS integration via BACnet/Modbus. Document ROI and prepare replication playbook for similar IT/ITES campuses.',
+     col:'var(--o)',m:[['Coverage','100 % floors'],['EPI Target','≤132 kWh/m²/yr'],['ROI','Positive by month 18'],['Next','Replication playbook']]},
+  ];
+  c.innerHTML=ph.map(p=>`<div class="pc" style="border-left-color:${p.col};">
+    <div class="pn">${p.n}</div>
+    <div class="pt" style="color:${p.col};">${p.t}</div>
+    <div class="pd">${p.d}</div>
+    <div class="pm">${p.m.map(([k,v])=>`<div class="pmi"><div class="pml">${k}</div><div class="pmv" style="color:${p.col};">${v}</div></div>`).join('')}</div>
+  </div>`).join('');
+}
+
+function rnd(n){return Math.random()*n;}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+function init(){
+  initOv();
+  buildRT();
+  buildPhases();
+  setInterval(tickSensors,2000);
+}
+window.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
